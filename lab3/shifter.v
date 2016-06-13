@@ -3,17 +3,26 @@ module shifter(SW, KEY, LEDR)
   input [3:0] KEY;
   output [7:0] LEDR;
 
-  wire in; // initial in
+  wire in, out7, out6, out5, out4, out3, out2, out1, out0; // initial in and outputs
   assign in = KEY[3] & SW[7];
 
-  bitShifter B7(.L(SW[7]), .I(in), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[7]);
-  bitShifter B6(.L(SW[6]), .I(LEDR[7]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[6]);
-  bitShifter B5(.L(SW[5]), .I(LEDR[6]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[5]);
-  bitShifter B4(.L(SW[4]), .I(LEDR[5]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[4]);
-  bitShifter B3(.L(SW[3]), .I(LEDR[4]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[3]);
-  bitShifter B2(.L(SW[2]), .I(LEDR[3]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[2]);
-  bitShifter B1(.L(SW[1]), .I(LEDR[2]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[1]);
-  bitShifter B0(.L(SW[0]), .I(LEDR[1]), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(LEDR[0]);
+  bitShifter B7(.L(SW[7]), .I(in), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out7);
+  bitShifter B6(.L(SW[6]), .I(out7), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out6);
+  bitShifter B5(.L(SW[5]), .I(out6), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out5);
+  bitShifter B4(.L(SW[4]), .I(out5), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out4);
+  bitShifter B3(.L(SW[3]), .I(out4), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out3);
+  bitShifter B2(.L(SW[2]), .I(out3), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out2);
+  bitShifter B1(.L(SW[1]), .I(out2), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out1);
+  bitShifter B0(.L(SW[0]), .I(out1), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out0);
+
+  assign LERD[7] = out7;
+  assign LERD[6] = out6;
+  assign LERD[5] = out5;
+  assign LERD[4] = out4;
+  assign LERD[3] = out3;
+  assign LERD[2] = out2;
+  assign LERD[1] = out1;
+  assign LERD[0] = out0;
 endmodule
 
 module bitShifter(L, I, S, N, C, R, O);
