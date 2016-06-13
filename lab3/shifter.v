@@ -1,3 +1,5 @@
+`timescale 1ns / 1ns // `timescale time_unit/time_precision
+
 module shifter(SW, KEY, LEDR)
   input [9:0] SW;
   input [3:0] KEY;
