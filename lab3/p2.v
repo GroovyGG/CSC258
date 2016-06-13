@@ -1,10 +1,10 @@
 `timescale 1ns / 1ns // `timescale time_unit/time_precision
 
 module p2(SW, KEY, LEDR, HEX0, HEX4, HEX5);   
-   input [3:0] SW;
+   input [9:0] SW;
    input [3:0] KEY;
    output reg [7:0] LEDR;
-   output reg [3:0] HEX0, HEX4, HEX5;
+   output reg [6:0] HEX0, HEX4, HEX5;
    reg              A, B, register;
 
    always @(posedge KEY[0]) // every time the clock changes
@@ -12,7 +12,7 @@ module p2(SW, KEY, LEDR, HEX0, HEX4, HEX5);
 
         A = SW;
         
-        if (SW[0] == 0) // reset_b == 0
+        if (SW[9] == 0) // reset_b == 0
           B = 4'b0000;
         else
           B = register[3:0];
@@ -22,9 +22,9 @@ module p2(SW, KEY, LEDR, HEX0, HEX4, HEX5);
         case (KEY[3:1]);
           0'b000: adder add(.O(A), .P(B), .Y(register[3:0]), .C(register[4]));
           0'b001: register = {4b'0000, A} + {4b'0000, B};
-          0'b010: register = {A ^ B, A | B};
-          0'b011: register[1] = (A | B) != 4b'0000;
-          0'b100: register[1] = (A & B) == 4b'1111;
+          0'b010: register = {A | B, A ^ B};
+          0'b011: register[0] = (A | B) != 4b'0000;
+          0'b100: register[0] = (A & B) == 4b'1111;
           0'b101: register = {4b'0000, B} << A;
           0'b110: register = {4b'0000, B} >> A;
           0'b111: register = {4b'0000, A} * {4b'0000, B};
