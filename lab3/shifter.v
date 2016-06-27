@@ -1,7 +1,7 @@
 `timescale 1ns / 1ns // `timescale time_unit/time_precision
 
 module shifter(SW, KEY, LEDR);
-   
+
    input [9:0] SW;
    input [3:0] KEY;
    output [7:0] LEDR;
@@ -9,7 +9,7 @@ module shifter(SW, KEY, LEDR);
    wire         in, out7, out6, out5, out4, out3, out2, out1, out0; // initial in and outputs
    assign in = KEY[3] & SW[7];
 
-   always @(*)
+   always @(posedge KEY[0])
      begin
 
         bitShifter B7(.L(SW[7]), .I(in  ), .S(KEY[2]), .N(KEY[1]), .C(KEY[0]), .R(SW[9]), .O(out7));
@@ -31,7 +31,7 @@ module shifter(SW, KEY, LEDR);
         assign LERD[0] = out0;
 
      end;
-   
+
 endmodule // shifter
 
 module bitShifter(L, I, S, N, C, R, O);
