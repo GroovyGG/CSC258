@@ -1,78 +1,81 @@
 `timescale 1ns / 1ns // `timescale time_unit/time_precision
 
-module p2(SW, KEY, LEDR, HEX0, HEX4, HEX5);   
-   input [9:0] SW;
+module p2(SW, KEY, LEDR, HEX0, HEX4, HEX5);
+   wire t0, clock;
+   wire [2:0] Func;
+   wire [3:0] A, B, C;
+   wire [7:0] AplusB;
+   reg [7:0]  register = 0;
    input [3:0] KEY;
-   output reg [7:0] LEDR;
-   output reg [6:0] HEX0, HEX4, HEX5;
-   reg              A, B, register;
+   input [9:0] SW;
+   output [6:0] HEX0, HEX4, HEX5;
+   output [7:0] LEDR;
 
-   always @(posedge KEY[0]) // every time the clock changes
-     begin
+   assign clock = KEY[0];
+   assign Func = KEY[3:1];
 
-        A = SW;
-        
-        if (SW[9] == 0) // reset_b == 0
-          B = 4'b0000;
-        else
-          B = register[3:0];
-
-        register = 8b'00000000;
-
-        case (KEY[3:1]);
-          0'b000: adder add(.O(A), .P(B), .Y(register[3:0]), .C(register[4]));
-          0'b001: register = {4b'0000, A} + {4b'0000, B};
-          0'b010: register = {A | B, A ^ B};
-          0'b011: register[0] = (A | B) != 4b'0000;
-          0'b100: register[0] = (A & B) == 4b'1111;
-          0'b101: register = {4b'0000, B} << A;
-          0'b110: register = {4b'0000, B} >> A;
-          0'b111: register = {4b'0000, A} * {4b'0000, B};
-          default: register = 8b'00000000;
-        endcase
-
-        LEDR = register;
-        HEX hex0(.SW(A), .HEX0(HEX0));
-        HEX hex1(.SW(register[3:0]), .HEX0(HEX4));
-        HEX hex1(.SW(register[7:4]), .HEX0(HEX5));
-        
-     end
-
+   assign A = SW[3:0];
+   assign B = register[3:0];
+   rippleCarryAdder4 a(.X(A), .Y(B), .Cin(1'b0), .Cout(t0), .S(C));
+   assign AplusB = {3'b000, t0, C};
+   
+   assign LEDR = register;
+   HEX h0(.data(A            ), .HEX0(HEX0));
+   HEX h4(.data(register[3:0]), .HEX0(HEX4));
+   HEX h5(.data(register[7:4]), .HEX0(HEX5));
+   
+   always@(posedge clock) begin
+      if (SW[9])
+        register[3:0] <= 4'b1111;
+      case (Func)
+        3'b000: register <= AplusB;
+        3'b001: register <= {4'b0000, A} + {4'b0000, B};
+        3'b010: register <= {A | B, A ^ B};
+        3'b011:
+          if (A | B)
+            register <= 8'b00000001;
+        3'b100:
+          if ((A & B) == 4'b1111)
+            register <= 8'b00000001;
+        3'b101: register <= {4'b0000, B} >> A;
+        3'b110: register <= {4'b0000, B} << A;
+        3'b111: register <= {4'b0000, A} * {4'b0000, B};
+        default: ;
+      endcase // case (KEY[3:1])
+   end // always@ (posedge clock)
+   
 endmodule // p2
 
-module adder(O, P, Y, C);
-   input [3:0] O, P;
-   output [3:0] Y;
-   output       C;
-   wire         c0, c1, c2;
+module fullAdder(X, Y, Z, C, S);
+   input X, Y, Z;
+   output C, S;
    
-   addbit add1(.A(O[0]), .B(P[0]), .C( 0), .S(Y[0]), .X(c0));
-   addbit add2(.A(O[1]), .B(P[1]), .C(c0), .S(Y[1]), .X(c1));
-   addbit add3(.A(O[2]), .B(P[2]), .C(c1), .S(Y[2]), .X(c2));
-   addbit add4(.A(O[3]), .B(P[3]), .C(c2), .S(Y[3]), .X(C ));
+   assign C = (X & Y) | ((X ^ Y) & Z);
+   assign S = X ^ Y ^ Z;
+endmodule // fullAdder
 
-endmodule // adder
+module rippleCarryAdder4(X, Y, Cin, Cout, S);
+   input [3:0] X, Y;
+   input       Cin;
+   output      Cout;
+   output [3:0] S;
+   wire         c1, c2, c3;
+   
+   fullAdder a0(.X(X[0]), .Y(Y[0]), .Z(Cin), .C(c1  ), .S(S[0]));
+   fullAdder a1(.X(X[1]), .Y(Y[1]), .Z(c1 ), .C(c2  ), .S(S[1]));
+   fullAdder a2(.X(X[2]), .Y(Y[2]), .Z(c2 ), .C(c3  ), .S(S[2]));
+   fullAdder a3(.X(X[3]), .Y(Y[3]), .Z(c3 ), .C(Cout), .S(S[3]));
+endmodule // rippleCarryAdder4
 
-module addbit(A, B, C, S, X);
-   input A, B, C;
-   output S, X;
-   wire   w;
-
-   assign w = A & ~B | ~A & B;
-   assign S = C & ~w | ~C & w;
-   assign X = ~w & B | w & C;
-
-endmodule // adder1
-
-module HEX(SW, HEX0);
-   input [3:0] SW;
+module HEX(data, HEX0);
+   input [3:0] data;
    output [6:0] HEX0;
    wire         c0, c1, c2 , c3;
-
-   assign c0 = SW[0];
-   assign c1 = SW[1];
-   assign c2 = SW[2];
-   assign c3 = SW[3];
+   
+   assign c0 = data[3];
+   assign c1 = data[2];
+   assign c2 = data[1];
+   assign c3 = data[0];
    
    assign HEX0[0] = ~c0 & ~c1 & ~c2 &  c3 | ~c0 &  c1 & ~c2 & ~c3 | c0 & ~c1 &  c2 &  c3 |  c0 &  c1 & ~c2 &  c3;
    assign HEX0[1] =  c0 &  c1 &  c2 |  c1 &  c2 & ~c3 |  c0 &  c2 & c3 |  c0 &  c1 & ~c2 & ~c3 | ~c0 &  c1 & ~c2 & c3;
@@ -81,5 +84,4 @@ module HEX(SW, HEX0);
    assign HEX0[4] = ~c0 &  c3 | ~c0 &  c1 & ~c2 | ~c1 & ~c2 &  c3;
    assign HEX0[5] = ~c0 & ~c1 &  c3 | ~c0 & ~c1 &  c2 | ~c0 &  c2 & c3 |  c0 &  c1 & ~c2 &  c3;
    assign HEX0[6] = ~c0 & ~c1 & ~c2 | ~c0 &  c1 &  c2 &  c3 |  c0 & c1 & ~c2 & ~c3;
-
 endmodule // HEX

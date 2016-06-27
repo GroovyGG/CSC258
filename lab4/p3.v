@@ -46,8 +46,6 @@ module counter(C, En);
 
    //assign Rate = 25'b1011111010111100000111111;
    assign Rate = 25'b0000000000000000000000010;
-
-
    assign En = (RateDivider == 28'b0000000000000000000000000000) ? 1 : 0;
 
    always@(posedge C) begin

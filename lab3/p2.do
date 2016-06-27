@@ -13,28 +13,31 @@ log {/*}
 # add wave {/*} would add all items in top level simulation module.
 add wave {/*}
 
-force {SW} 4b'0010
-force {KEY} 4b'0000
+force {SW[9]} 1'b1
+force {SW[3:0]} 4'b0010
 
-force {KEY[0]} 0
-run 5ns
-force {KEY[0]} 1
-run 5ns
+force {KEY[0]} 0 0 ns, 1 50 ns -r 100
 
-force {KEY[0]} 0
-run 5ns
-force {KEY[0]} 1
-run 5ns
+force {KEY[3:1]} 3'b000
+run 100ns
 
-force {KEY[3:1]} 3b'010
-force {KEY[0]} 0
-run 5ns
-force {KEY[0]} 1
-run 5ns
+force {KEY[3:1]} 3'b001
+run 100ns
 
-force {KEY[3:1]} 3b'110
-force {KEY[0]} 0
-run 5ns
-force {KEY[0]} 1
-run 5ns
+force {KEY[3:1]} 3'b010
+run 100ns
 
+force {KEY[3:1]} 3'b011
+run 100ns
+
+force {KEY[3:1]} 3'b100
+run 100ns
+
+force {KEY[3:1]} 3'b101
+run 100ns
+
+force {KEY[3:1]} 3'b110
+run 100ns
+
+force {KEY[3:1]} 3'b111
+run 100ns
