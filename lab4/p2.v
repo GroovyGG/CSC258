@@ -20,36 +20,25 @@ module SWcounter(SW, C, En);
    input C;
    input [1:0] SW;
    output      En;
-   wire [27:0] r0, r1, r2, r3;
    reg [1:0]   R = 2'b11;
    reg [27:0]  Rate, RateDivider = 0;
 
-   assign r0 = 28'b0000000000000000000000000000;
-   /*
-   assign r1 = 28'b0010111110101111000001111111;
-   assign r2 = 28'b0101111101011110000011111111;
-   assign r3 = 28'b1011111010111100000111111111;
-    */
-   assign r1 = 28'b0000000000000000000000000011;
-   assign r2 = 28'b0000000000000000000000000111;
-   assign r3 = 28'b0000000000000000000000001111;
-
-   assign En = (RateDivider == 28'b0000000000000000000000000000) ? 1 : 0;
+   assign En = (RateDivider == 0) ? 1 : 0;
 
    always@(posedge C) begin
       if (SW != R) begin
          R <= SW;
-         RateDivider <= 28'b0000000000000000000000000000;
+         RateDivider <= 0;
          
          case(SW)
-           2'b00: Rate <= r0;
-           2'b01: Rate <= r1;
-           2'b10: Rate <= r2;
-           2'b11: Rate <= r3;
+           2'b00: Rate <= 0;
+           2'b01: Rate <= 3;//49999999;
+           2'b10: Rate <= 7;//99999999;
+           2'b11: Rate <= 11;//199999999; 
          endcase // case (SW)
       end
       else if (RateDivider == Rate)
-        RateDivider <= 28'b0000000000000000000000000000;
+        RateDivider <= 0;
       else
         RateDivider <= RateDivider + 1'b1;
    end // always@ (posedge C)

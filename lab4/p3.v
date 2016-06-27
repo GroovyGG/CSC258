@@ -40,17 +40,17 @@ endmodule // p3
 
 module counter(C, En);
    input C;
-   output      En;
+   output En;
    wire [24:0] Rate;
    reg [24:0]  RateDivider = 0;
 
-   //assign Rate = 25'b1011111010111100000111111;
-   assign Rate = 25'b0000000000000000000000010;
-   assign En = (RateDivider == 28'b0000000000000000000000000000) ? 1 : 0;
+   //assign Rate = 24999999;
+   assign Rate = 2;
+   assign En = (RateDivider == 0) ? 1 : 0;
 
    always@(posedge C) begin
       if (RateDivider == Rate)
-        RateDivider <= 28'b0000000000000000000000000000;
+        RateDivider <= 0;
       else
         RateDivider <= RateDivider + 1'b1;
    end // always@ (posedge C)
